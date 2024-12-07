@@ -15,9 +15,10 @@ contract Election {
         bool voted;
         bool delegated;
         uint candidateId;
-
+        
         address[] whitelistedBy;
         uint whitelistCount;
+        string feedback;
     }
 
     uint numCandidates = 0;
@@ -35,6 +36,7 @@ contract Election {
 
     mapping(address => bool) callEndElection;
     mapping(address => bool) callRestartElection;
+    mapping(bytes32 => bool) anonymousvotes;
     uint endElectionCount = 0;
     uint restartElectionCount = 0;
 
@@ -53,7 +55,7 @@ contract Election {
         require(candidateId[msg.sender] > 0, "Only candidate can whitelist the voter");
         if(voterId[_voter] == 0) {
             // add voter into the voters list
-            voters.push(Voter(_voter, false, false,false, 0, new address[](numCandidates), 0));
+            voters.push(Voter(_voter, false, false,false, 0, new address[](numCandidates), 0, "/"));
             numVoters += 1;
             voterId[_voter] = numVoters;
         }
@@ -78,6 +80,36 @@ contract Election {
         require(voter.eligible, "Voter is not yet eligible to cast vote");
         require(!voter.voted, "Voter has already cast its vote");
         voter.candidateId = candidateId[_candidate];
+        voter.voted = true;
+        Candidate storage candidate = candidates[candidateId[_candidate] - 1];
+        candidate.votes += 1;
+    }
+
+    function VoteCandidateWFB(address _candidate, string calldata _feedback) external{
+        require(!finished, "Election has already finished");
+        require(candidateId[_candidate] > 0, "Candidate do not exist");
+        require(candidateId[msg.sender] == 0, "Only voters can cast vote");
+        require(voterId[msg.sender] > 0, "Voter is not added in the election");
+        Voter storage voter = voters[voterId[msg.sender] - 1];
+        require(voter.eligible, "Voter is not yet eligible to cast vote");
+        require(!voter.voted, "Voter has already cast its vote");
+        voter.candidateId = candidateId[_candidate];
+        voter.voted = true;
+        voter.feedback = _feedback;
+        Candidate storage candidate = candidates[candidateId[_candidate] - 1];
+        candidate.votes += 1;
+
+    }
+
+    function anonymousVote(address _candidate) external {
+        require(!finished, "Election has already finished");
+        require(candidateId[_candidate] > 0, "Candidate does not exist");
+        require(voterId[msg.sender] > 0, "Voter is not added to the election");
+        Voter storage voter = voters[voterId[msg.sender] - 1];
+        require(voter.eligible, "Voter is not eligible to cast a vote");
+        bytes32 voteHash = keccak256(abi.encodePacked(msg.sender, _candidate));
+        require(!anonymousvotes[voteHash], "Votes has already been cast by this voter");
+        anonymousvotes[voteHash] = true;
         voter.voted = true;
         Candidate storage candidate = candidates[candidateId[_candidate] - 1];
         candidate.votes += 1;
@@ -229,5 +261,27 @@ contract Election {
         voter.voted = true;
         Candidate storage candidate = candidates[candidateId[_candidate] - 1];
         candidate.votes += 1;
+    }
+
+    function getFeedBack(address _voter) public view returns(string memory){
+        require(voterId[_voter] > 0, "Voter does not exist");
+        Voter storage voter = voters[voterId[_voter] - 1];
+        require(voter.voted, "Voter has not cast a vote");
+        return voter.feedback;
+    }
+
+    function getTotalVotes() public view returns(uint){
+        uint totalVotes = 0;
+        for (uint i = 0; i < numCandidates; i++){
+            totalVotes += candidates[i].votes;
+        }
+        return totalVotes;
+    }
+
+    function getSpecficCandidateVotes(address _candidate) public view returns(uint){
+        uint Votes = 0;
+        require(candidateId[_candidate] > 0, "Candidate does not exist");
+        Votes = candidates[candidateId[_candidate] - 1].votes;
+        return Votes;
     }
 }
