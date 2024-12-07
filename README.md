@@ -2,6 +2,8 @@
 
 **_Topic: Blackchain voting system_**
 
+Code: **voting.sol** inside contract
+
 Group member: Yang Yufeng(1155194222), 
 
 Description: We develop the voting system base on the lab example to add more function and modify some original rule. We hope to imitate the real life voting system. 
