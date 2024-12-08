@@ -23,6 +23,8 @@ contract Election {
 
     uint numCandidates = 0;
     uint numVoters = 0;
+    uint VoteNo = 0;
+    address RecentVoters;
 
     mapping(address => uint) candidateId;   // index = Id - 1
     mapping(address => uint) voterId;       // index = Id - 1
@@ -80,6 +82,8 @@ contract Election {
         require(voter.eligible, "Voter is not yet eligible to cast vote");
         require(!voter.voted, "Voter has already cast its vote");
         voter.candidateId = candidateId[_candidate];
+        VoteNo += 1;
+        RecentVoters = msg.sender;
         voter.voted = true;
         Candidate storage candidate = candidates[candidateId[_candidate] - 1];
         candidate.votes += 1;
@@ -94,6 +98,8 @@ contract Election {
         require(voter.eligible, "Voter is not yet eligible to cast vote");
         require(!voter.voted, "Voter has already cast its vote");
         voter.candidateId = candidateId[_candidate];
+        VoteNo += 1;
+        RecentVoters = msg.sender;
         voter.voted = true;
         voter.feedback = _feedback;
         Candidate storage candidate = candidates[candidateId[_candidate] - 1];
@@ -111,6 +117,7 @@ contract Election {
         require(!anonymousvotes[voteHash], "Votes has already been cast by this voter");
         anonymousvotes[voteHash] = true;
         voter.voted = true;
+        VoteNo += 1;
         Candidate storage candidate = candidates[candidateId[_candidate] - 1];
         candidate.votes += 1;
     }
@@ -164,6 +171,7 @@ contract Election {
             for(uint i = 0; i < candidates.length; i ++) {
             callRestartElection[candidates[i].addr] = false;
             } 
+            VoteNo = 0;
             restartElectionCount = 0;
             finished = false;
         }
@@ -271,11 +279,7 @@ contract Election {
     }
 
     function getTotalVotes() public view returns(uint){
-        uint totalVotes = 0;
-        for (uint i = 0; i < numCandidates; i++){
-            totalVotes += candidates[i].votes;
-        }
-        return totalVotes;
+        return VoteNo;
     }
 
     function getSpecficCandidateVotes(address _candidate) public view returns(uint){
