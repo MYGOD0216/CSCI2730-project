@@ -217,6 +217,7 @@ contract Election {
         require(voter.eligible, "Voter is not yet eligible to cast vote");
         require(voter.voted, "Voter has not cast its vote yet");
         candidates[voter.candidateId - 1].votes -= 1;
+        VoteNo -= 1;
         voter.voted = false;
         voter.candidateId = 0;
     }
@@ -267,6 +268,7 @@ contract Election {
         require(voter.delegated, "Voter does not assign their vote");
         voter.candidateId = candidateId[_candidate];
         voter.voted = true;
+        VoteNo += 1;
         Candidate storage candidate = candidates[candidateId[_candidate] - 1];
         candidate.votes += 1;
     }
