@@ -10,7 +10,7 @@ Description: We develop the voting system base on the lab example to add more fu
 
 **_New function:_**<br/> 
 
-- restartElection：restart the election if all candidate agree
+- restartElection：restart and continue the election from last endelection if all candidate agree
 
 - realTimeVote：show the current vote distribution
 
