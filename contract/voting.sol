@@ -159,7 +159,7 @@ contract Election {
         }
     }
 
-    function ContinueElection() external {
+    function RestartElection() external {
         //restart the election 
         require(finished, "Election has not finished yet");
         require(candidateId[msg.sender] > 0, "Only candidate can call this function");
