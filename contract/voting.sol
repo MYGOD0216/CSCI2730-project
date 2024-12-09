@@ -159,7 +159,7 @@ contract Election {
         }
     }
 
-    function restartElection() external {
+    function ContinueElection() external {
         //restart the election 
         require(finished, "Election has not finished yet");
         require(candidateId[msg.sender] > 0, "Only candidate can call this function");
@@ -171,7 +171,6 @@ contract Election {
             for(uint i = 0; i < candidates.length; i ++) {
             callRestartElection[candidates[i].addr] = false;
             } 
-            VoteNo = 0;
             restartElectionCount = 0;
             finished = false;
         }
